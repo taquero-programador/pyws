@@ -192,4 +192,90 @@ si hay más de una cosa dentro de un etiqueta, utilizar .strings
 for string in soup.strings:
     print(repr(string)) # repr retornas los valores de escape
 
+# la cadena contiene muchos espacios en blanco, se pueden eliminar usando .stripped_strings
+for string in soup.stripped_strings:
+    print(repr(string))
+# elimina las líneas, espacio al inicio y fin que esten en blanco
+# subiendo cada cadena y etiquetan tiene un padre
+"""
+.parent
+en el doc la etiqueta <head> es el padre de <title>
+"""
+title_tag = soup.title
+print(title_tag)
+print(title_tag.parent)
+print(title_tag.string.parent)
+# el padre de una etiqueta
+html_tag = soup.html
+print(type(html_tag))
+# y el .parent de un objeto se define como None
+print(soup.parent)
+# .parents puede iterar sobre todos los padre de un elemento
+link = soup.a
+print(link)
+for parent in link.parents:
+    print(link.name)
 
+# yendo de lado. usando un doc simple
+si_soup = BeautifulSoup("<a><b>text1</b><c>text2</c></a>", 'html.parser')
+print(si_soup.prettify())
+# b y c hastan al mismo nivel, lo que las hace hermanos
+"""
+.next_sibling y .previuos_sibling
+se pueden usar para navegar entre elementos de pagina que están al mismo nivel
+"""
+print(sibling_soup.b.next_sibling)
+print(sibling_soup.b.previuos_sibling)
+
+link = soup.a
+print(link)
+print(link.next_sibling)
+print(link.next_sibling.next_sibling)
+
+for si in soup.a.next_siblings:
+    print(repr(si))
+
+for si in soup.find(id='link3').previuos_siblings:
+    print(repr(si))
+
+# buscando en el árbol find() y find_all() son los más importantes
+doc_soup = BeautifulSoup(html_doc, 'html.parser')
+
+# pasar una cadena como argumento para que b4s lo busque
+soup.find_all('b')
+# expreciones regulares. buscar todas las etiquetas que inicien con b
+import re
+for tag in soup.find_all(re.compile("^b")):
+    print(tag.name)
+# el siguiente trae todo lo que contenga una 't'
+for tag in soup.find_all(re.compile("t")):
+    print(tag.name)
+# pasar una lista como argumento
+
+print(soup.find_all(["a", "b"]))
+
+# true. coincide con todo lo que encuentro pero no las cadenas
+for tag in soup.find_all(True):
+    print(tag.name)
+
+# funciones
+def has_class_but_no_id(tag):
+    return tag.has_attr('class') and not tag.has_attr('id')
+
+soup.find_all(has_class_not_id)
+# la funcion anterior solo retorna etiquetas <p>
+# funcion que ignore cierto valor dentro de un href
+
+def not_lacie(href):
+    return href and not re.compile("lacie").search(href)
+
+print(soup.find_all(href=not_lacie))
+# la siguiente funcione retorna True si la etiqueta esta rodeada por texto
+from bs4 import NavigableString as ns
+
+def by_string(tag):
+    return (isinstance(tag.next_element, NavigableString)
+            and isinstance(tag.previuos_element, NavigableString))
+
+for tag in soup.find_all(by_string):
+    print(tag.name)

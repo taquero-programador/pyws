@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from bs4 import BeautifulSoup
+import re
+from bs4 import BeautifulSoup, NavigableString
 
 with open("index.html") as fp:
     soup = BeautifulSoup(fp, "html.parser")
@@ -21,8 +22,10 @@ and they lived at the bottom of a well.</p>
 """
 
 soup = BeautifulSoup(html_doc, 'html.parser')
-head_tag = soup.head
-title_head = head_tag.contents[0]
 
-for string in soup.strings:
-    print(repr(string))
+def by_string(tag):
+    return (isinstance(tag.next_element, NavigableString)
+            and isinstance(tag.previuos_element, NavigableString))
+
+for tag in soup.find_all(by_string):
+    print(tag.name)
