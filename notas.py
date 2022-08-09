@@ -820,4 +820,155 @@ class UnsortedAttributes(HTMLFormatter):
 print(attr_soup.p.encode(formatter=UnsortedAttributes()))
 # <p z="1" a="3"></p>
 
+from bs4.element import CData
+soup = BeautifulSoup("<a></a>", 'html.parser')
+soup.a.string = CData("one < three")
+print(soup.a.prettify(formatter="html"))
+# <a>
+#  <![CDATA[one < three]]>
+# </a>
+
+# get_text() formato legible para humanos dentro de un documento o etiqueta
+markup = '<a href="http://example.com/">\nI linked to <i>example.com</i>\n</a>'
+soup = BeautifulSoup(markup, 'html.parser')
+
+soup.get_text()
+'\nI linked to example.com\n'
+soup.i.get_text()
+'example.com'
+
+# usar .stripped_strings
+[text for text in soup.stripped_strings]
+# retorna una lista de items
+
+# diferencias entre analizadores
+BeautifulSoup("<a><b/></a>", "html.parser")
+# <a><b></b></a>
+
+print(BeautifulSoup("<a><b/></a>", "xml"))
+# <?xml version="1.0" encoding="utf-8"?>
+# <a><b/></a>
+
+# ver diferencias
+BeautifulSoup("<a></p>", "lxml")
+# <html><body><a></a></body></html>
+# contra el mismo usando html5lib
+BeautifulSoup("<a></p>", "html5lib")
+# <html><head></head><body><a><p></p></a></body></html>
+# el mismo incorporando el analizador de python
+BeautifulSoup("<a></p>", "html.parser")
+# <a></a>
+
+# encodings
+markup = "<h1>Sacr\xc3\xa9 bleu!</h1>"
+soup = BeautifulSoup(markup, 'html.parser')
+soup.h1
+# <h1>Sacré bleu!</h1>
+soup.h1.string
+# 'Sacr\xe9 bleu!'
+
+soup.original_encoding
+'utf-8'
+
+markup = b"<h1>\xed\xe5\xec\xf9</h1>"
+soup = BeautifulSoup(markup, 'html.parser')
+print(soup.h1)
+# <h1>νεμω</h1>
+print(soup.original_encoding)
+# iso-8859-7
+# se arregla así
+soup = BeautifulSoup(markup, 'html.parser', from_encoding="iso-8859-8")
+print(soup.h1)
+# <h1>םולש</h1>
+print(soup.original_encoding)
+# iso8859-8
+
+# usar exclude_encoding si no se sabe la codificacion correcta
+soup = BeautifulSoup(markup, 'html.parser', exclude_encodings=["iso-8859-7"])
+print(soup.h1)
+# <h1>םולש</h1>
+print(soup.original_encoding)
+# WINDOWS-1255
+
+# codificacion de salida. automaticamente al crea un documento se crea en UTF-8 aunque no se especifique
+markup = b'''
+ <html>
+  <head>
+   <meta content="text/html; charset=ISO-Latin-1" http-equiv="Content-type" />
+  </head>
+  <body>
+   <p>Sacr\xe9 bleu!</p>
+  </body>
+ </html>
+'''
+
+soup = BeautifulSoup(markup, 'html.parser')
+print(soup.prettify())
+# <html>
+#  <head>
+#   <meta content="text/html; charset=utf-8" http-equiv="Content-type" />
+#  </head>
+#  <body>
+#   <p>
+#    Sacré bleu!
+#   </p>
+#  </body>
+# </html>
+
+# user prettify si no desea utf-8
+print(soup.prettify("latin-1"))
+# <html>
+#  <head>
+#   <meta content="text/html; charset=latin-1" http-equiv="Content-type" />
+# ...
+
+from bs4 import UnicodeDammit
+dammit = UnicodeDammit("Sacr\xc3\xa9 bleu!")
+print(dammit.unicode_markup)
+# Sacré bleu!
+dammit.original_encoding
+# 'utf-8'
+
+# comillas tipograficas
+markup = b"<p>I just \x93love\x94 Microsoft Word\x92s smart quotes</p>"
+
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="html").unicode_markup
+# '<p>I just &ldquo;love&rdquo; Microsoft Word&rsquo;s smart quotes</p>'
+
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="xml").unicode_markup
+# '<p>I just &#x201C;love&#x201D; Microsoft Word&#x2019;s smart quotes</p>'
+
+# comillas tipograficas de microsoft en ascii
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="ascii").unicode_markup
+# '<p>I just "love" Microsoft Word\'s smart quotes</p>'
+
+UnicodeDammit(markup, ["windows-1252"]).unicode_markup
+# '<p>I just “love” Microsoft Word’s smart quotes</p>'
+
+# condiciones inconsistentes
+snowmen = (u"\N{SNOWMAN}" * 3)
+quote = (u"\N{LEFT DOUBLE QUOTATION MARK}I like snowmen!\N{RIGHT DOUBLE QUOTATION MARK}")
+doc = snowmen.encode("utf8") + quote.encode("windows_1252")
+
+# numero de lineas puede encontrar la posicion de donde encontro la etiqueta
+markup = "<p\n>Paragraph 1</p>\n    <p>Paragraph 2</p>"
+soup = BeautifulSoup(markup, 'html.parser')
+for tag in soup.find_all('p'):
+    print(repr((tag.sourceline, tag.sourcepos, tag.string)))
+# (1, 0, 'Paragraph 1')
+# (3, 4, 'Paragraph 2')
+
+soup = BeautifulSoup(markup, 'html5lib')
+for tag in soup.find_all('p'):
+    print(repr((tag.sourceline, tag.sourcepos, tag.string)))
+# (2, 0, 'Paragraph 1')
+# (3, 6, 'Paragraph 2')
+
+# descativar la funcion
+markup = "<p\n>Paragraph 1</p>\n    <p>Paragraph 2</p>"
+soup = BeautifulSoup(markup, 'html.parser', store_line_numbers=False)
+print(soup.p.sourceline)
+# None
+
+# comparando objetos por igualdad
 
