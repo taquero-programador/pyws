@@ -271,11 +271,102 @@ def not_lacie(href):
 
 print(soup.find_all(href=not_lacie))
 # la siguiente funcione retorna True si la etiqueta esta rodeada por texto
-from bs4 import NavigableString as ns
+from bs4 import NavigableString
 
-def by_string(tag):
+def surrounded_by_strings(tag):
     return (isinstance(tag.next_element, NavigableString)
-            and isinstance(tag.previuos_element, NavigableString))
+            and isinstance(tag.previous_element, NavigableString))
 
-for tag in soup.find_all(by_string):
+for tag in soup.find_all(surrounded_by_strings):
     print(tag.name)
+
+# find_all(): metodos find_all(name, attr, recursive, string, limit, **kwargs)
+# busca y recupera todos los descendientes que coincidan con el filtro
+soup.find_all("title")
+print(soup.find_all("a", "title"))
+print(soup.find_all("a"))
+print(soup.find_all(id="link2"))
+print(soup.find(string=re.compile("sisters")))
+
+# argumentos de palabra. bs4 filtrara segun el atributo 'id'
+print(soup.find_all(id="link2"))
+# bs4 filtrara contra el href de cada etiqueta
+print(soup.find_all(href=re.compile("elsie")))
+# encontrar todas las etiquetas con 'id' sin importar su valor
+print(find_all(id=True))
+# filtrar por varios atributos
+print(find_all(href=re.compile("elsie"), id="link1"))
+# algunos atributos de HTML5 no se puede usar
+data_soup = BeautifulSoup('<div data-foo="value">foo!</div>', 'html.parser')
+print(data_soup.find_all(data-foo="value")) # error syntax
+# para realizar la busqueda se puede pasar como un dict
+print(data_soup.find_all(attrs={"data-fo":"value"}))
+# buscando por class en css. se debe usar class_
+print(soup.find_all("a", class_"sisters"))
+
+# funcion de largo en class_, retorna todas las etiquetas que tengan una clases, que no esten vacias y su largo sea 6
+print(soup.find_all(class_=re.compile("itl")))
+
+def six_class(css_class):
+    return css_class is not None and len(css_class) == 6
+
+print(soup.find_all(class_=six_class))
+
+# argumentos string busca cadenas en lugar de etiquetas
+print(soup.find(strinf="Eslie"))
+# pasarle una lista
+print(soup.find_all(string=["Elsie", "Lacie"]))
+print(soup.find_all(string=re.compile("Dormouse")))
+
+def string_tag(s):
+    return (s == s.parent.strin)
+
+print(soup.find_all(string=string_tag))
+# retorna
+# ["The Dormouse's story", "The Dormouse's story", 'Elsie', 'Lacie', 'Tillie', '...']
+
+# encontrar etiqueta 'a' que contenga 'Elsie'
+print(soup.find_all("a", "Elsie"))
+
+"""
+el argumento limit
+devuelve todas las etiquetas y cadenas que concidan con el filtro. puede tomar tiempo con doc grandes
+utiliza la palabra limit para limitar el maximo de retorno
+"""
+print(soup.find_all("a", limit=2))
+# retorna solo 2 'a' del maximo 3
+
+"""
+argumento recursive
+por defecto examina todos los hijos, para traer solo los child directo usar recursive=False
+"""
+print(soup.html.find_all("title"))
+# retorna etiqueta title
+print(soup.find_all("title", recursive=False))
+# retorna una lista vacia
+
+"""
+llamar una etiqueta es como llamar a find_all().
+las siguiente dos lineas son equivalentes
+"""
+print(soup.find_all("a"))
+print(soup("a"))
+# las siguientes tambien son equivalentes
+print(soup.title.find_all(string=True))
+print(soup.title(string=True))
+# find()
+print(soup.find_all("title", limit=1))
+# retorna una lista de solo un elemento de title
+print(soup.find("title"))
+# retorna lo mismo en cadena, al usar el nombre de etiqueta solo accede al primer elemento con esa etiqueta
+
+"""
+find_parents() y find_parent()
+find_parent(name, attrs, string, limit, **kwargs), find_parents no permite limit
+"""
+
+a_string = soup.find(string="Lacie")
+print(a_string) # retorna una cadena "Lacie"
+print(a_string.find_parents("a")) # retorna lo mismo pero en una lista con toda la etiqueta
+print(a_string.find_parent("p")) # retorna etiqueta p y todo lo que este dentro
+

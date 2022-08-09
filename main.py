@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup
 
 with open("index.html") as fp:
     soup = BeautifulSoup(fp, "html.parser")
@@ -23,9 +23,7 @@ and they lived at the bottom of a well.</p>
 
 soup = BeautifulSoup(html_doc, 'html.parser')
 
-def by_string(tag):
-    return (isinstance(tag.next_element, NavigableString)
-            and isinstance(tag.previuos_element, NavigableString))
+def six_class(css_class):
+    return css_class is not None and len(css_class) == 6
 
-for tag in soup.find_all(by_string):
-    print(tag.name)
+print(soup.find_all(class_=six_class))
