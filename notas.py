@@ -362,11 +362,462 @@ print(soup.find("title"))
 
 """
 find_parents() y find_parent()
-find_parent(name, attrs, string, limit, **kwargs), find_parents no permite limit
+find_parents(name, attrs, string, limit, **kwargs), find_parent no permite limit
 """
 
 a_string = soup.find(string="Lacie")
 print(a_string) # retorna una cadena "Lacie"
 print(a_string.find_parents("a")) # retorna lo mismo pero en una lista con toda la etiqueta
 print(a_string.find_parent("p")) # retorna etiqueta p y todo lo que este dentro
+
+"""
+find_previous_siblings() y find_previous_sibling()
+sibling no permite limit
+utilican previuos_siblings para iterar sobre los elementos
+"""
+last_link = soup.find("a", id="link3")
+print(last_link) # etk a id link3
+print(last_link.find_previous_siblings=("a"))
+# retorna todas las a previos a la ultima link3
+f_stroy = soup.find("p", "story")
+print(f_stroy.find_previous_sibling("p")) # retorna p
+
+# find_all_next() y find_next()
+
+first_link = soup.a
+print(first_link) # retorna a id link1
+print(first_link.find_all_next(string=True))
+# ['Elsie', ',\n', 'Lacie', ' and\n', 'Tillie',
+#  ';\nand they lived at the bottom of a well.', '\n', '...', '\n']
+print(first_link.find_next("p"))
+
+# find_all_previous() y find_previous() itera sobre etiquetas y cadenas que van antes del documento
+first_link = soup.a
+print(first_link)
+# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+print(first_link.find_all_previous("p"))
+# [<p class="story">Once upon a time there were three little sisters; ...</p>,
+#  <p class="title"><b>The Dormouse's story</b></p>]
+print(first_link.find_previous("title"))
+# [<p class="story">Once upon a time there were three little sisters; ...</p>,
+#  <p class="title"><b>The Dormouse's story</b></p>]
+
+"""
+selectores css
+bs4 tiene un select() para ejecutar un css selector contra un documento analizado y devolvera las coincidencias
+"""
+# encontrar las etiquetas
+print(soup.select("title"))
+# <title>The Dormouse's story</title>
+print(soup.select("p:nth-of-type(3)"))
+# [<p class="story">...</p>]
+# encuenta etiquetas debajo de otras
+print(soup.select("body a"))
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie"  id="link2">Lacie</a>,
+#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+print(soup.select("html head select"))
+# [<title>The Dormouse's story</title>]
+# encuentra etiquetas directamente debajo de otras etiquetas
+print(soup.select("head > title"))
+# [<title>The Dormouse's story</title>]
+print(soup.select("p"))
+
+# encuentra etiquetas por clase
+soup.select(".sister")
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+soup.select("[class~=sister]")
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+# busca etiquetas por ID
+soup.select("#link1")
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
+
+soup.select("a#link2")
+# [<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+
+# pasar varios elementos como una tupla
+soup.select("#link1,#link2")
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+
+# prueba la existencia de un atributo
+soup.select('a[href]')
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+# buscar etiquetas por valor de atributo
+soup.select('a[href="http://example.com/elsie"]')
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
+
+soup.select('a[href^="http://example.com/"]')
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+soup.select('a[href$="tillie"]')
+# [<a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+soup.select('a[href*=".com/el"]')
+# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
+
+# primera etiqueta que coincide con un selector
+soup.select_one(".sister")
+# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+
+# XML define espacios de nombres
+from bs4 import BeautifulSoup
+xml = """<tag xmlns:ns1="http://namespace1/" xmlns:ns2="http://namespace2/">
+ <ns1:child>I'm in namespace 1</ns1:child>
+ <ns2:child>I'm in namespace 2</ns2:child>
+</tag> """
+soup = BeautifulSoup(xml, "xml")
+
+soup.select("child")
+# [<ns1:child>I'm in namespace 1</ns1:child>, <ns2:child>I'm in namespace 2</ns2:child>]
+
+soup.select("ns1|child")
+# [<ns1:child>I'm in namespace 1</ns1:child>]
+
+namespaces = dict(first="http://namespace1/", second="http://namespace2/")
+soup.select("second|child", namespaces=namespaces)
+# [<ns1:child>I'm in namespace 2</ns1:child>]
+
+# cambiar nombres y atributos de etiquetas
+soup = BeautifulSoup('<b class="boldest">Extremely bold</b>', 'html.parser')
+tag = soup.b
+
+tag.name = "blockquote"
+tag['class'] = 'verybold'
+tag['id'] = 1
+tag
+# <blockquote class="verybold" id="1">Extremely bold</blockquote>
+
+del tag['class']
+del tag['id']
+tag
+# <blockquote>Extremely bold</blockquote>
+
+# modificar .string
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+
+tag = soup.a
+tag.string = "New link text."
+tag
+# <a href="http://example.com/">New link text.</a>
+# cuidado al modificar etiquetas que contenga otras o seran modificadas
+
+# append() añade contenido a una etiqueta
+soup = BeautifulSoup("<a>Foo</a>", 'html.parser')
+soup.a.append("Bar")
+
+soup
+# <a>FooBar</a>
+soup.a.contents
+# ['Foo', 'Bar']
+
+# extend()
+soup = BeautifulSoup("<a>Soup</a>", 'html.parser')
+soup.a.extend(["'s", " ", "on"])
+
+soup
+# <a>Soup's on</a>
+soup.a.contents
+# ['Soup', ''s', ' ', 'on']
+
+# NavigableString() y .new_tag(). agregar una cadena a un documento
+
+soup = BeautifulSoup("<b></b>", 'html.parser')
+tag = soup.b
+tag.append("Hello")
+new_string = NavigableString(" there")
+tag.append(new_string)
+tag
+# <b>Hello there.</b>
+tag.contents
+# ['Hello', ' there']
+
+# crear un comentario u otra subclase de NavigableString
+from bs4 import Comment
+new_comment = Comment("Nice to see you.")
+tag.append(new_comment)
+tag
+# <b>Hello there<!--Nice to see you.--></b>
+tag.contents
+# ['Hello', ' there', 'Nice to see you.']
+
+# crear una nueva etiqueta
+soup = BeautifulSoup("<b></b>", 'html.parser')
+original_tag = soup.b
+
+new_tag = soup.new_tag("a", href="http://www.example.com")
+original_tag.append(new_tag)
+original_tag
+# <b><a href="http://www.example.com"></a></b>
+
+new_tag.string = "Link text."
+original_tag
+# <b><a href="http://www.example.com">Link text.</a></b>
+
+# insert()
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+tag = soup.a
+
+tag.insert(1, "but did not endorse ")
+tag
+# <a href="http://example.com/">I linked to but did not endorse <i>example.com</i></a>
+tag.contents
+# ['I linked to ', 'but did not endorse', <i>example.com</i>]
+
+# insert_before() y insert_after()
+soup = BeautifulSoup("<b>leave</b>", 'html.parser')
+tag = soup.new_tag("i")
+tag.string = "Don't"
+soup.b.string.insert_before(tag)
+soup.b
+# <b><i>Don't</i>leave</b>
+
+div = soup.new_tag('div')
+div.string = 'ever'
+soup.b.i.insert_after(" you ", div)
+soup.b
+# <b><i>Don't</i> you <div>ever</div> leave</b>
+soup.b.contents
+# [<i>Don't</i>, ' you', <div>ever</div>, 'leave']
+
+# clear()
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+tag = soup.a
+
+tag.clear()
+tag
+# <a href="http://example.com/"></a>
+
+# extract()
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+a_tag = soup.a
+
+i_tag = soup.i.extract()
+
+a_tag
+# <a href="http://example.com/">I linked to</a>
+
+i_tag
+# <i>example.com</i>
+
+print(i_tag.parent)
+# None
+
+my_string = i_tag.string.extract()
+my_string
+# 'example.com'
+
+print(my_string.parent)
+# None
+i_tag
+# <i></i>
+
+# decompose() elimina una etiqueta de arbol y luego la destruye junto a su contenido
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+a_tag = soup.a
+i_tag = soup.i
+
+i_tag.decompose()
+a_tag
+# <a href="http://example.com/">I linked to</a>
+
+# no debe usarse sino sabe lo que hace
+i_tag.decomposed
+# True
+
+a_tag.decomposed
+# False
+
+# replace_with()
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+a_tag = soup.a
+
+new_tag = soup.new_tag("b")
+new_tag.string = "example.com"
+a_tag.i.replace_with(new_tag)
+
+a_tag
+# <a href="http://example.com/">I linked to <b>example.com</b></a>
+
+bold_tag = soup.new_tag("b")
+bold_tag.string = "example"
+i_tag = soup.new_tag("i")
+i_tag.string = "net"
+a_tag.b.replace_with(bold_tag, ".", i_tag)
+
+a_tag
+# <a href="http://example.com/">I linked to <b>example</b>.<i>net</i></a>
+
+# warp() envuelve un elemento en la etiqueta a especificar
+soup = BeautifulSoup("<p>I wish I was bold.</p>", 'html.parser')
+soup.p.string.wrap(soup.new_tag("b"))
+# <b>I wish I was bold.</b>
+
+soup.p.wrap(soup.new_tag("div"))
+# <div><p><b>I wish I was bold.</b></p></div>
+
+# unwrap() elmina la etiqueta pero no su contenido
+markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+a_tag = soup.a
+
+a_tag.i.unwrap()
+a_tag
+# <a href="http://example.com/">I linked to example.com</a>
+# smooth
+soup = BeautifulSoup("<p>A one</p>", 'html.parser')
+soup.p.append(", a two")
+
+soup.p.contents
+# ['A one', ', a two']
+
+print(soup.p.encode())
+# b'<p>A one, a two</p>'
+
+print(soup.p.prettify())
+# <p>
+#  A one
+#  , a two
+# </p>
+
+soup.smooth()
+
+soup.p.contents
+# ['A one, a two']
+
+print(soup.p.prettify())
+# <p>
+#  A one, a two
+# </p>
+
+# prettity() retorna un árbol formateado
+markup = '<html><head><body><a href="http://example.com/">I linked to <i>example.com</i></a>'
+soup = BeautifulSoup(markup, 'html.parser')
+soup.prettify()
+# '<html>\n <head>\n </head>\n <body>\n  <a href="http://example.com/">\n...'
+
+print(soup.prettify())
+# <html>
+#  <head>
+#  </head>
+#  <body>
+#   <a href="http://example.com/">
+#    I linked to
+#    <i>
+#     example.com
+#    </i>
+#   </a>
+#  </body>
+# </html>
+
+# llamar a prettify() en nivel superior
+
+# no se debe usar directamente para dar formato, solo es una manera visual de comprender la estructura
+
+# impresion no bonita. usar str()
+str(soup)
+# '<html><head></head><body><a href="http://example.com/">I linked to <i>example.com</i></a></body></html>'
+
+str(soup.a)
+# '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+
+# formateadores de salida
+soup = BeautifulSoup("&ldquo;Dammit!&rdquo; he said.", 'html.parser')
+str(soup)
+# '“Dammit!” he said.'
+
+# caracters de salida
+oup = BeautifulSoup("<p>The law firm of Dewey, Cheatem, & Howe</p>", 'html.parser')
+soup.p
+# <p>The law firm of Dewey, Cheatem, &amp; Howe</p>
+
+soup = BeautifulSoup('<a href="http://example.com/?foo=val1&bar=val2">A link</a>', 'html.parser')
+soup.a
+# <a href="http://example.com/?foo=val1&amp;bar=val2">A link</a>
+
+french = "<p>Il a dit &lt;&lt;Sacr&eacute; bleu!&gt;&gt;</p>"
+soup = BeautifulSoup(french, 'html.parser')
+print(soup.prettify(formatter="minimal"))
+# <p>
+#  Il a dit &lt;&lt;Sacré bleu!&gt;&gt;
+# </p>
+
+# convierte caracteres unicode a entidades HTML, si es posible
+print(soup.prettify(formatter="html"))
+# <p>
+#  Il a dit &lt;&lt;Sacr&eacute; bleu!&gt;&gt;
+# </p>
+
+br = BeautifulSoup("<br>", 'html.parser').br
+
+print(br.encode(formatter="html"))
+# b'<br/>'
+
+print(br.encode(formatter="html5"))
+# b'<br>'
+
+option = BeautifulSoup('<option selected=""></option>').option
+print(option.encode(formatter="html"))
+# b'<option selected=""></option>'
+
+print(option.encode(formatter="html5"))
+# b'<option selected></option>'
+
+# usar un control mas sofisticado
+from bs4.formatter import HTMLFormatter
+def uppercase(str):
+    return str.upper()
+
+formatter = HTMLFormatter(uppercase)
+
+print(soup.prettify(formatter=formatter))
+# <p>
+#  IL A DIT <<SACRÉ BLEU!>>
+# </p>
+
+print(link_soup.a.prettify(formatter=formatter))
+# <a href="HTTP://EXAMPLE.COM/?FOO=VAL1&BAR=VAL2">
+#  A LINK
+# </a>
+
+# formateo que aumenta la sangria
+formatter = HTMLFormatter(indent=8)
+print(link_soup.a.prettify(formatter=formatter))
+# <a href="http://example.com/?foo=val1&bar=val2">
+#         A link
+# </a>
+
+# subclasificacion sobre la salida para dar más control
+attr_soup = BeautifulSoup(b'<p z="1" m="2" a="3"></p>', 'html.parser')
+print(attr_soup.p.encode())
+# <p a="3" m="2" z="1"></p>
+
+# para desactivas usar el metodo Formatter.attributes() para controlar que atributos se omiten y en que orden
+class UnsortedAttributes(HTMLFormatter):
+    def attributes(self, tag):
+        for k, v in tag.attrs.items():
+            if k == 'm':
+                continue
+            yield k, v
+
+print(attr_soup.p.encode(formatter=UnsortedAttributes()))
+# <p z="1" a="3"></p>
+
 
