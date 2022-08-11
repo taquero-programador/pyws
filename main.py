@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
 
-import re
 from bs4 import BeautifulSoup
+import requests
+import csv
+url = 'http://coreyms.com'
+r = requests.get(url).text
+soup = BeautifulSoup(r, 'html.parser')
 
-with open("index.html") as fp:
-    soup = BeautifulSoup(fp, "html.parser")
+with open('corey.csv', 'w', newline='') as f:
+    head_title = ['title', 'description', 'youtube-link']
+    esc = csv.writer(f)
+    esc.writerow(head_title)
 
+    for article in soup.find_all('article'):
+        head = article.h2.a.text
+        print(head)
+        summary = article.find('div', class_='entry-content').p.text
+        print(summary)
 
-html_doc = """
-<html><head><title>The Dormouse's story</title></head>
-<body>
-<p class="title"><b>The Dormouse's story</b></p>
-
-<p class="story">Once upon a time there were three little sisters; and their names were
-<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
-<a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
-and they lived at the bottom of a well.</p>
-
-<p class="story">...</p>
-"""
-
-soup = BeautifulSoup(html_doc, 'html.parser')
-
-def six_class(css_class):
-    return css_class is not None and len(css_class) == 6
-
-print(soup.find_all(class_=six_class))
+        try:
+            vid_src = article.find('iframe', class_='youtube-player')['src']
+            vid_id = vid_src.split('/')[4]
+            vid_id = vid_id.split('?')[0]
+            yt_link = f"https://youtube.com/watch?v={vid_id}"
+        except Exception as e:
+            yt_link = None
+        print(yt_link)
+        print()
+        esc.writerow([head, summary, yt_link])

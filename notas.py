@@ -970,5 +970,106 @@ soup = BeautifulSoup(markup, 'html.parser', store_line_numbers=False)
 print(soup.p.sourceline)
 # None
 
-# comparando objetos por igualdad
+# corey bs4
+from bs4 import BeautifulSoup
+import requests
 
+with open('sample.html', 'rb') as f:
+    soup = BeautifulSoup(f, 'html.parser')
+
+print(soup.find('div', class_='article'))
+# busca un div que contenga article
+
+# usar la funcion .find dentro de un bucle
+
+for article in soup.find_all('div', class_='article'):
+    head = article.h2.a.text
+    print(head)
+
+    summary = article-p.text
+    print(summary)
+
+# usar una url real en bs4
+from bs4 import BeautifulSoup
+import requests
+
+url = 'http://coreyms.com'
+r = requests.get(url).text
+soup = BeautifulSoup(r, 'html.parser')
+
+article = soup.find('article')
+
+head = article.h2.a.text
+summary = article.find('div', class_='entry-content').p.text
+# acceder al video
+vid_src = article.find('iframe', class_='youtube-player')['src']
+print(vid_src)
+# separar la url de video y cambiar por wathc?v={url}
+vid_id = vid_src.split('/')[4] # separa por /
+vid_id = vid_id.split('?')[0] # obtiene el id
+print(vid_id)
+# usar url youtube + wathc?v=id
+yt_link = f'https://youtube.com/watch?v={vid_id}'
+print(ty_link)
+
+# usar un bucle para obtener todo
+from bs4 import BeautifulSoup
+import requests
+
+url = 'http://coreyms.com'
+r = requests.get(url).text
+soup = BeautifulSoup(r, 'html.parser')
+
+for article in soup.find_all('div'):
+    head = article.h2.a.text
+    print(head)
+
+    summary = article.find('div', class_='entry-content').p.text
+    print(summary)
+
+    vid_src = article.find('iframe', class_='youtube-player')['src']
+    vid_id = vid_src.split('/')[4]
+    vid_id = vid_id.split('?')[0]
+    yt_link = f"https://youtube.com/watch?v={vid_id}"
+    print(yt_link)
+    print()
+# funciona pero aparece un error con los videos lo cual se soluciona manejando las excepciones
+try:
+    vid_src = article.find('iframe', class_='entry-contet')['src']
+    vid_id = vid_src.split('/')[4]
+    vid_id = vid_id.split('?')[0]
+    yt_link = f"https://youtube.com/watch?v={vid_id}"
+except Exception as e:
+    yt_link = None
+print(yt_link)
+print()
+# guardar los resultado en .csv
+from bs4 import BeautifulSoup
+import requests
+import csv
+
+url = 'https://coreyms.com'
+r = requests.get(url).text
+soup = BeautifulSoup(r, 'html.parser')
+
+with open('corey.csv', 'w', newline='') as f:
+    head_title = ['title', 'desc', 'youtube-link']
+    esc = csv.writer(f)
+    esc.writerow(head_link)
+
+    for article in soup.find_all('article'):
+        head = article.h2.a.text
+        print(head)
+        summary = article.find('div', class_='entry-content').p.text
+        print(summary)
+
+        try:
+            vid_src = article.find('iframe', class_='youtube-player')['src']
+            vid_id = vid_src.split('/')[4]
+            vid_id = vid_id.split('?')[0]
+            yt_link = f"https://youtube.com/watch?v={vid_id}"
+        except Exception as e:
+            yt_link = None
+        print(yt_link)
+        print()
+        esc.writerow([head, summary, yt_link])
